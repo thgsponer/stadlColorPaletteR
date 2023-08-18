@@ -27,6 +27,10 @@ devtools::install_github("thgsponer/stadlColorPaletteR")
 
 Full documentation website on: https://thgsponer.github.io/stadlColorPaletteR
 
+## Documentation
+
+Full documentation website on: https://thgsponer.github.io/stadlColorPaletteR
+
 ## Example
 
 This is a basic example which shows you how to solve a common problem:
