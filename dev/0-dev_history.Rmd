@@ -1,5 +1,5 @@
 ---
-title: "Development actions history"
+title: "STADL color palettes"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -16,10 +16,10 @@ All commands that you use to use when developing packages...
 fusen::fill_description(
   pkg = here::here(),
   fields = list(
-    Title = "Build A Package From Rmarkdown File",
-    Description = "Use Rmarkdown First method to build your package. Start your package with documentation. Everything can be set from a Rmarkdown file in your project.",
+    Title = "STADL color palettes",
+    Description = "Build color palettes based on the five basic STADL colors.",
     `Authors@R` = c(
-      person("John", "Doe", email = "john@email.me", role = c("aut", "cre"), comment = c(ORCID = "0000-0000-0000-0000"))
+      person("Thomas", "Thomas", email = "thomas.gsponer@stadl-partners.ch", role = c("aut", "cre"), comment = c(ORCID = "0000-0000-0000-0000"))
     )
   )
 )
