@@ -16,7 +16,6 @@ knitr::opts_chunk$set(
 # stadlColorPaletteR
 
 <!-- badges: start -->
-[![Codecov test coverage](https://codecov.io/gh/thgsponer/stadlColorPaletteR/branch/master/graph/badge.svg)](https://app.codecov.io/gh/thgsponer/stadlColorPaletteR?branch=master)
 <!-- badges: end -->
 
 The goal of stadlColorPaletteR is to ...
@@ -29,18 +28,6 @@ You can install the development version of stadlColorPaletteR from [GitHub](http
 # install.packages("devtools")
 devtools::install_github("thgsponer/stadlColorPaletteR")
 ```
-
-## Documentation
-
-Full documentation website on: https://thgsponer.github.io/stadlColorPaletteR
-
-## Documentation
-
-Full documentation website on: https://thgsponer.github.io/stadlColorPaletteR
-
-## Documentation
-
-Full documentation website on: https://thgsponer.github.io/stadlColorPaletteR
 
 ## Example
 
