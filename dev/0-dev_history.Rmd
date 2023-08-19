@@ -24,7 +24,7 @@ fusen::fill_description(
   )
 )
 # Define License with use_*_license()
-usethis::use_mit_license("John Doe")
+usethis::use_mit_license("Thomas Gsponer")
 ```
 
 # All-in-one function to deploy publicly on GitHub
@@ -45,7 +45,7 @@ usethis::use_git()
 # Deal with classical files to ignore
 usethis::git_vaccinate()
 # Use main for primary branch
-usethis::git_default_branch_rename()
+usethis::git_default_branch_rename(to = 'master')
 ```
 
 # Set extra sources of documentation
