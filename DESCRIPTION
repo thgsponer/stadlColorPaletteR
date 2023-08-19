@@ -8,7 +8,12 @@ Description: Build color palettes based on the five basic STADL colors.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Imports: 
-    stats
+    ggplot2,
+    ggpubr,
+    magrittr,
+    scales,
+    stats,
+    tibble
 Suggests: 
     knitr,
     rmarkdown,
