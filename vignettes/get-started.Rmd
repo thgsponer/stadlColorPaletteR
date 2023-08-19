@@ -56,6 +56,10 @@ findable in your Rmd
 After inflating the template
 
 -  This function code will automatically be added in a new file in the "R/" directory
+
+Documentation:
+Document a returned tibble like so:
+  #' @return a [tibble][tibble::tibble-package]
 -->
 
 

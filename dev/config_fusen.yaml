@@ -2,10 +2,10 @@ flat_full.Rmd:
   path: dev/flat_full.Rmd
   state: active
   R:
-  - R/my_median.R
+  - R/get_color_hex_code.R
   - R/my_other_median.R
   tests:
-  - tests/testthat/test-my_median.R
+  - tests/testthat/test-get_color_hex_code.R
   - tests/testthat/test-my_other_median.R
   vignettes: vignettes/get-started.Rmd
   inflate:
