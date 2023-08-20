@@ -72,7 +72,7 @@ Document a returned tibble like so:
   #' @return a [tibble][tibble::tibble-package]
 -->
 
-```{r function}
+```{r function-get_color_hex_code}
 #' Get hex code of colors
 #'
 #' @param ... Names of colors as character 
@@ -81,14 +81,24 @@ Document a returned tibble like so:
 #' @return
 #' Hex code of colors specified
 #' 
-#' @export TRUE
+#' @export
 #'
 #' @examples
-get_color_hex_code <- function(..., colors = mycolors) {
+get_color_hex_code <- function(..., base_colors = mycolors) {
+
   cols <- c(...)
   if (is.null(cols))
-    return (colors %>% pull(hex_code))
-  colors %>% dplyr::filter(color_names %in% cols) %>% pull(hex_code)
+    return (base_colors %>% pull(hex_code))
+  if (!all(cols%in%base_colors$color_names)){
+    not <- cols[!cols%in%base_colors$color_names]
+    warning(paste(not, collapse=', '), 
+            ' not part of base_colors!')
+  }
+    
+  base_colors %>% 
+    dplyr::filter(
+      color_names %in% cols) %>% 
+    pull(hex_code)
 }
 ```
 
@@ -106,14 +116,9 @@ After inflating the template
 - This example will automatically be added in the vignette created from this Rmd template
 -->
 
-```{r examples}
-my_median(1:12)
+```{r examples-get_color_hex_code}
+get_color_hex_code('palevioletred2')
 
-# Example with your dataset in "inst/"
-datafile <- system.file("nyc_squirrels_sample.csv", package = "stadlColorPaletteR")
-nyc_squirrels <- read.csv(datafile, encoding = "UTF-8")
-# Apply my function
-my_median(nyc_squirrels[,"hectare_squirrel_number"])
 ```
 
 <!--
@@ -129,19 +134,13 @@ After inflating the template
 -  This test code will automatically be added in the "tests/testthat/" directory
 -->
 
-```{r tests}
-test_that("my_median works properly and show error if needed", {
-  expect_true(my_median(1:12) == 6.5)
-  expect_error(my_median("text"))
+```{r tests-get_color_hex_code}
+test_that("get_color_hex_code works properly and show error if needed", {
+  expect_true(get_color_hex_code('mediumorchid1') == '#E066FF')
+  expect_warning(get_color_hex_code("fuchsia"), 'fuchsia not part of base_colors')
+  expect_error(get_color_hex_code("mediumorchid1", colors = asdf), "object 'asdf' not found")
 })
 
-# Test with your dataset in "inst/"
-datafile <- system.file("nyc_squirrels_sample.csv", package = "stadlColorPaletteR")
-nyc_squirrels <- read.csv(datafile, encoding = "UTF-8")
-# Apply test on my function
-test_that("my_median works properly with internal dataset", {
-  expect_equal(my_median(nyc_squirrels[,"hectare_squirrel_number"]), 3)
-})
 ```
 
 # Calculate the mean of a vector
