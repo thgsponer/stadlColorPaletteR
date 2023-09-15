@@ -13,6 +13,7 @@ Imports:
     stats,
     tibble
 Suggests: 
+    covr,
     knitr,
     readr,
     rmarkdown,
