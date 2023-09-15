@@ -4,7 +4,7 @@
 \alias{get_color_hex_code}
 \title{Get hex code of colors}
 \usage{
-get_color_hex_code(..., base_colors = mycolors)
+get_color_hex_code(..., base_colors)
 }
 \arguments{
 \item{...}{Names of colors as character}
@@ -21,6 +21,6 @@ Get hex code of colors
 datafile <- system.file("mycolors.csv", 
                         package = "stadlColorPaletteR")
 mycolors <- readr::read_csv(datafile)
-get_color_hex_code('palevioletred2')
+get_color_hex_code('palevioletred2', base_colors = mycolors)
 
 }

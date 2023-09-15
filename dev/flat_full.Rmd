@@ -16,6 +16,7 @@ library(readr)
 library(ggplot2)
 library(scales)
 library(ggpubr)
+library(utils)
 ```
 
 <!--
@@ -89,7 +90,7 @@ Document a returned tibble like so:
 #' @export
 #'
 #' @examples
-get_color_hex_code <- function(..., base_colors = mycolors) {
+get_color_hex_code <- function(..., base_colors) {
 
   cols <- c(...)
   if (is.null(cols))
@@ -125,7 +126,57 @@ After inflating the template
 datafile <- system.file("mycolors.csv", 
                         package = "stadlColorPaletteR")
 mycolors <- readr::read_csv(datafile)
-get_color_hex_code('palevioletred2')
+get_color_hex_code('palevioletred2', base_colors = mycolors)
+
+```
+```{r function-generate_colors_to_interpolate}
+#' Generate all possible combination of n colors from the total number N of colors provided. Will be used later for interpolation. 
+#'
+#' @param colors A tibble with color_names and hex_codes as columns. 
+#' @param n An integer between 1 and number of colors provided.
+#'
+#' @return
+#' A list of length C(N,n), each element containing n colors, where C(N,n) denotes the number of n-combination from a set of N elements. 
+#' 
+#' @export
+#'
+#' @examples
+generate_colors_to_interpolate <- function(colors, n){
+  if(n<1) {
+    stop("n must be greater than 1")
+  }
+  pal <- combn(get_color_hex_code(base_colors = colors),n)
+  colnames(pal) <- paste('pal',1:ncol(pal), sep = '')
+  as.list(
+    as.data.frame(pal)
+  )
+}
+```
+
+<!--
+Create a chunk with an example of use for your function
+
+- The chunk needs to be named `examples` at least
+- It contains working examples of your function
+- The chunk is better be named `examples-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This example will automatically be added in the '@examples' part of our function above in the "R/" directory
+- This example will automatically be added in the vignette created from this Rmd template
+-->
+
+```{r examples-generate_colors_to_interpolate}
+datafile <- system.file("mycolors.csv", 
+                        package = "stadlColorPaletteR")
+mycolors <- readr::read_csv(datafile)
+
+# combinations with 2 colors
+generate_colors_to_interpolate(mycolors, 2)
+
+#combinations with all colors
+generate_colors_to_interpolate(mycolors, nrow(mycolors))
 
 ```
 
@@ -156,6 +207,31 @@ test_that("get_color_hex_code works properly and show error if needed", {
   expect_error(get_color_hex_code("mediumorchid1", base_colors = asdf), "object 'asdf' not found")
 })
 
+```
+
+```{r tests-generate_colors_to_interpolate}
+
+  set.seed(123)
+  myc <- tibble(color_names = sample(colors(),5), 
+                     hex_code = colorRampPalette(color_names)(length(color_names)))
+  
+  p2 <- combn(get_color_hex_code(base_colors = myc),2)
+  colnames(p2) <- paste('pal',1:ncol(p2), sep = '')
+  p2 <- as.list(
+    as.data.frame(p2)
+  )
+
+  p1 <- generate_colors_to_interpolate(colors = myc, 2)
+  
+  testthat::expect_true(
+    identical(p1, p2)
+  )
+  
+  testthat::expect_error(generate_colors_to_interpolate(colors = myc, 0), 
+               "n must be greater than 1")
+
+  testthat::expect_error(generate_colors_to_interpolate(colors = myc, 0))
+  
 ```
 
 # Calculate the mean of a vector

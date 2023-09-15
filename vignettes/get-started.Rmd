@@ -82,7 +82,35 @@ After inflating the template
 datafile <- system.file("mycolors.csv", 
                         package = "stadlColorPaletteR")
 mycolors <- readr::read_csv(datafile)
-get_color_hex_code('palevioletred2')
+get_color_hex_code('palevioletred2', base_colors = mycolors)
+
+```
+
+<!--
+Create a chunk with an example of use for your function
+
+- The chunk needs to be named `examples` at least
+- It contains working examples of your function
+- The chunk is better be named `examples-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This example will automatically be added in the '@examples' part of our function above in the "R/" directory
+- This example will automatically be added in the vignette created from this Rmd template
+-->
+
+
+```{r examples-generate_colors_to_interpolate}
+datafile <- system.file("mycolors.csv", 
+                        package = "stadlColorPaletteR")
+mycolors <- readr::read_csv(datafile)
+
+# combinations with 2 colors
+generate_colors_to_interpolate(mycolors, 2)
+
+#combinations with all colors
+generate_colors_to_interpolate(mycolors, nrow(mycolors))
 
 ```
 
