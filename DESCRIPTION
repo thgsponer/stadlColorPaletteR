@@ -5,15 +5,13 @@ Authors@R:
     person("Thomas", "Thomas", , "thomas.gsponer@stadl-partners.ch", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0000-0000-0000"))
 Description: Build color palettes based on the five basic STADL colors.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: GPL (>= 3)
 Imports: 
     dplyr,
     magrittr,
     stats,
     tibble
 Suggests: 
-    covr,
     knitr,
     readr,
     rmarkdown,

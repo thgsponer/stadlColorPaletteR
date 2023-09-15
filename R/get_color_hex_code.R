@@ -14,9 +14,9 @@
 #' datafile <- system.file("mycolors.csv", 
 #'                         package = "stadlColorPaletteR")
 #' mycolors <- readr::read_csv(datafile)
-#' get_color_hex_code('palevioletred2')
+#' get_color_hex_code('palevioletred2', base_colors = mycolors)
 #'
-get_color_hex_code <- function(..., base_colors = mycolors) {
+get_color_hex_code <- function(..., base_colors) {
 
   cols <- c(...)
   if (is.null(cols))

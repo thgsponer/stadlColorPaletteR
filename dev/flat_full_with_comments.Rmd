@@ -58,8 +58,25 @@ mycolors <- readr::read_csv(datafile)
 ```
 
 
-# Functions to generate color palettes
+# Functions to generate color paletts
 
+<!--
+Create a chunk for the core of the function
+
+- The chunk needs to be named `function` at least
+- It contains the code of a documented function
+- The chunk can also be named `function-my_median` to make it easily
+findable in your Rmd
+- Let the `@examples` part empty, and use the next `examples` chunk instead to present reproducible examples
+
+After inflating the template
+
+-  This function code will automatically be added in a new file in the "R/" directory
+
+Documentation:
+Document a returned tibble like so:
+  #' @return a [tibble][tibble::tibble-package]
+-->
 
 ## Extract hex-code of colors specified in a tibble
 
@@ -93,6 +110,20 @@ get_color_hex_code <- function(..., base_colors) {
 }
 ```
 
+<!--
+Create a chunk with an example of use for your function
+
+- The chunk needs to be named `examples` at least
+- It contains working examples of your function
+- The chunk is better be named `examples-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This example will automatically be added in the '@examples' part of our function above in the "R/" directory
+- This example will automatically be added in the vignette created from this Rmd template
+-->
+
 ```{r examples-get_color_hex_code}
 datafile <- system.file("mycolors.csv", 
                         package = "stadlColorPaletteR")
@@ -115,7 +146,7 @@ test_that("get_color_hex_code works properly and show error if needed", {
 
 ```
 
-## Generate colors for later interpolation
+## Extract hex-code of colors specified in a tibble
 
 ```{r function-generate_colors_to_interpolate}
 #' Generate all possible combination of n colors from the total number N of colors provided. Will be used later for interpolation. 
@@ -141,6 +172,20 @@ generate_colors_to_interpolate <- function(colors, n){
 }
 ```
 
+<!--
+Create a chunk with an example of use for your function
+
+- The chunk needs to be named `examples` at least
+- It contains working examples of your function
+- The chunk is better be named `examples-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This example will automatically be added in the '@examples' part of our function above in the "R/" directory
+- This example will automatically be added in the vignette created from this Rmd template
+-->
+
 ```{r examples-generate_colors_to_interpolate}
 datafile <- system.file("mycolors.csv", 
                         package = "stadlColorPaletteR")
@@ -153,6 +198,19 @@ generate_colors_to_interpolate(mycolors, 2)
 generate_colors_to_interpolate(mycolors, nrow(mycolors))
 
 ```
+
+<!--
+Create a chunk with a test of use for your function
+
+- The chunk needs to be named `tests` at least
+- It contains working tests of your function
+- The chunk is better be named `tests-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This test code will automatically be added in the "tests/testthat/" directory
+-->
 
 
 ```{r tests-generate_colors_to_interpolate}
