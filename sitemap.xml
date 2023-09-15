@@ -4,6 +4,12 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/articles/get-started.html</loc>
+  </url>
+  <url>
+    <loc>/articles/index.html</loc>
+  </url>
+  <url>
     <loc>/authors.html</loc>
   </url>
   <url>
@@ -13,6 +19,24 @@
     <loc>/news/index.html</loc>
   </url>
   <url>
+    <loc>/reference/get_color_hex_code.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/my_median.html</loc>
+  </url>
+  <url>
+    <loc>/reference/my_other_median.html</loc>
+  </url>
+  <url>
+    <loc>/reference/pipe.html</loc>
+  </url>
+  <url>
+    <loc>/reference/stadlColorPaletteR-package.html</loc>
+  </url>
+  <url>
+    <loc>/reference/sub_median.html</loc>
   </url>
 </urlset>
