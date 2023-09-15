@@ -147,8 +147,69 @@ After inflating the template
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Use `spec()` to retrieve the full column specification for this data.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Specify the column types or set `show_col_types = FALSE` to quiet this message.</span></span>
-<span><span class="fu"><a href="../reference/get_color_hex_code.html">get_color_hex_code</a></span><span class="op">(</span><span class="st">'palevioletred2'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/get_color_hex_code.html">get_color_hex_code</a></span><span class="op">(</span><span class="st">'palevioletred2'</span>, base_colors <span class="op">=</span> <span class="va">mycolors</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "#EE799F"</span></span></code></pre></div>
+<!--
+Create a chunk with an example of use for your function
+
+- The chunk needs to be named `examples` at least
+- It contains working examples of your function
+- The chunk is better be named `examples-my_median` to be handled
+correctly when inflated as a vignette
+
+After inflating the template
+
+-  This example will automatically be added in the '@examples' part of our function above in the "R/" directory
+- This example will automatically be added in the vignette created from this Rmd template
+-->
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">datafile</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"mycolors.csv"</span>, </span>
+<span>                        package <span class="op">=</span> <span class="st">"stadlColorPaletteR"</span><span class="op">)</span></span>
+<span><span class="va">mycolors</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="va">datafile</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Rows: </span><span style="color: #0000BB;">5</span> <span style="font-weight: bold;">Columns: </span><span style="color: #0000BB;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Column specification</span> <span style="color: #00BBBB;">────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Delimiter:</span> ","</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">chr</span> (2): color_names, hex_code</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Use `spec()` to retrieve the full column specification for this data.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Specify the column types or set `show_col_types = FALSE` to quiet this message.</span></span>
+<span></span>
+<span><span class="co"># combinations with 2 colors</span></span>
+<span><span class="fu"><a href="../reference/generate_colors_to_interpolate.html">generate_colors_to_interpolate</a></span><span class="op">(</span><span class="va">mycolors</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $pal1</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#E066FF"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal2</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#424242"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal3</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#EE799F"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal4</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#6B6B6B"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal5</span></span>
+<span><span class="co">#&gt; [1] "#E066FF" "#424242"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal6</span></span>
+<span><span class="co">#&gt; [1] "#E066FF" "#EE799F"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal7</span></span>
+<span><span class="co">#&gt; [1] "#E066FF" "#6B6B6B"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal8</span></span>
+<span><span class="co">#&gt; [1] "#424242" "#EE799F"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal9</span></span>
+<span><span class="co">#&gt; [1] "#424242" "#6B6B6B"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal10</span></span>
+<span><span class="co">#&gt; [1] "#EE799F" "#6B6B6B"</span></span>
+<span></span>
+<span><span class="co">#combinations with all colors</span></span>
+<span><span class="fu"><a href="../reference/generate_colors_to_interpolate.html">generate_colors_to_interpolate</a></span><span class="op">(</span><span class="va">mycolors</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">mycolors</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $pal1</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#E066FF" "#424242" "#EE799F" "#6B6B6B"</span></span></code></pre></div>
 <!--
 Create a chunk with a test of use for your function
 
@@ -172,7 +233,7 @@ Each of them will be inflated in a different file, provided that there is a leve
 <div class="section level3">
 <h3 id="use-sub-functions-in-the-same-chunk">Use sub-functions in the same chunk<a class="anchor" aria-label="anchor" href="#use-sub-functions-in-the-same-chunk"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/my_other_median.html">my_other_median</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 6.5</span></span></code></pre></div>
 <!--
