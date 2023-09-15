@@ -4,12 +4,12 @@
 \alias{get_color_hex_code}
 \title{Get hex code of colors}
 \usage{
-get_color_hex_code(..., colors = mycolors)
+get_color_hex_code(..., base_colors = mycolors)
 }
 \arguments{
 \item{...}{Names of colors as character}
 
-\item{colors}{A tibble with color_names and hex_codes as columns}
+\item{base_colors}{A tibble with color_names and hex_codes as columns}
 }
 \value{
 Hex code of colors specified
@@ -18,11 +18,9 @@ Hex code of colors specified
 Get hex code of colors
 }
 \examples{
-my_median(1:12)
+datafile <- system.file("mycolors.csv", 
+                        package = "stadlColorPaletteR")
+mycolors <- readr::read_csv(datafile)
+get_color_hex_code('palevioletred2')
 
-# Example with your dataset in "inst/"
-datafile <- system.file("nyc_squirrels_sample.csv", package = "stadlColorPaletteR")
-nyc_squirrels <- read.csv(datafile, encoding = "UTF-8")
-# Apply my function
-my_median(nyc_squirrels[,"hectare_squirrel_number"])
 }

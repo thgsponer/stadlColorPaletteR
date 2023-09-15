@@ -78,14 +78,12 @@ After inflating the template
 -->
 
 
-```{r examples}
-my_median(1:12)
+```{r examples-get_color_hex_code}
+datafile <- system.file("mycolors.csv", 
+                        package = "stadlColorPaletteR")
+mycolors <- readr::read_csv(datafile)
+get_color_hex_code('palevioletred2')
 
-# Example with your dataset in "inst/"
-datafile <- system.file("nyc_squirrels_sample.csv", package = "stadlColorPaletteR")
-nyc_squirrels <- read.csv(datafile, encoding = "UTF-8")
-# Apply my function
-my_median(nyc_squirrels[,"hectare_squirrel_number"])
 ```
 
 <!--
@@ -100,6 +98,8 @@ After inflating the template
 
 -  This test code will automatically be added in the "tests/testthat/" directory
 -->
+
+
 
 
 # Calculate the mean of a vector

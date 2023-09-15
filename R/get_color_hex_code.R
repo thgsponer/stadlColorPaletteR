@@ -3,24 +3,32 @@
 #' Get hex code of colors
 #'
 #' @param ... Names of colors as character 
-#' @param colors A tibble with color_names and hex_codes as columns
+#' @param base_colors A tibble with color_names and hex_codes as columns
 #'
 #' @return
 #' Hex code of colors specified
 #' 
-#' @export TRUE
+#' @export
 #'
 #' @examples
-#' my_median(1:12)
+#' datafile <- system.file("mycolors.csv", 
+#'                         package = "stadlColorPaletteR")
+#' mycolors <- readr::read_csv(datafile)
+#' get_color_hex_code('palevioletred2')
 #'
-#' # Example with your dataset in "inst/"
-#' datafile <- system.file("nyc_squirrels_sample.csv", package = "stadlColorPaletteR")
-#' nyc_squirrels <- read.csv(datafile, encoding = "UTF-8")
-#' # Apply my function
-#' my_median(nyc_squirrels[,"hectare_squirrel_number"])
-get_color_hex_code <- function(..., colors = mycolors) {
+get_color_hex_code <- function(..., base_colors = mycolors) {
+
   cols <- c(...)
   if (is.null(cols))
-    return (colors %>% pull(hex_code))
-  colors %>% dplyr::filter(color_names %in% cols) %>% pull(hex_code)
+    return (base_colors %>% dplyr::pull(hex_code))
+  if (!all(cols%in%base_colors$color_names)){
+    not <- cols[!cols%in%base_colors$color_names]
+    warning(paste(not, collapse=', '), 
+            ' not part of base_colors!')
+  }
+    
+  base_colors %>% 
+    dplyr::filter(
+      color_names %in% cols) %>% 
+    dplyr::pull(hex_code)
 }
