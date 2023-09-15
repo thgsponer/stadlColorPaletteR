@@ -154,7 +154,6 @@ generate_colors_to_interpolate(mycolors, nrow(mycolors))
 
 ```
 
-
 ```{r tests-generate_colors_to_interpolate}
 
   set.seed(123)
