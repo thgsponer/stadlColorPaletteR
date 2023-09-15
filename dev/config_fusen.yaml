@@ -2,13 +2,13 @@ flat_full.Rmd:
   path: dev/flat_full.Rmd
   state: active
   R:
+  - R/color_palette.R
   - R/generate_colors_to_interpolate.R
   - R/get_color_hex_code.R
-  - R/my_other_median.R
   tests:
   - tests/testthat/test-get_color_hex_code.R
   - tests/testthat/test-generate_colors_to_interpolate.R
-  - tests/testthat/test-my_other_median.R
+  - tests/testthat/test-color_palette.R
   vignettes: vignettes/get-started.Rmd
   inflate:
     flat_file: dev/flat_full.Rmd

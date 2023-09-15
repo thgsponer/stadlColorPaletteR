@@ -1,21 +1,18 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
 
 # stadlColorPaletteR
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of stadlColorPaletteR is to ...
+The goal of stadlColorPaletteR is to provide easy functions to create
+your own color platttes to be used in ggplot.
 
 ## Installation
 
-You can install the development version of stadlColorPaletteR from [GitHub](https://github.com/) with:
+You can install the development version of stadlColorPaletteR from
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
@@ -24,36 +21,43 @@ devtools::install_github("thgsponer/stadlColorPaletteR")
 
 ## Documentation
 
-Full documentation website on: https://thgsponer.github.io/stadlColorPaletteR
+Full documentation website on:
+<https://thgsponer.github.io/stadlColorPaletteR>
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to create a color palette.
+First, lets define some colors as the basis for our palettes.
 
-
-```r
+``` r
 library(stadlColorPaletteR)
-## basic example code
+library(ggplot2)
+library(tidyverse)
+#> ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
+#> ✔ tibble  3.1.8      ✔ dplyr   1.0.10
+#> ✔ tidyr   1.3.0      ✔ stringr 1.5.0 
+#> ✔ readr   2.1.3      ✔ forcats 0.5.2 
+#> ✔ purrr   1.0.2
+#> Warning: package 'tidyr' was built under R version 4.2.3
+#> Warning: package 'purrr' was built under R version 4.2.3
+#> Warning: package 'stringr' was built under R version 4.2.3
+#> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+#> ✖ dplyr::filter() masks stats::filter()
+#> ✖ dplyr::lag()    masks stats::lag()
+
+set.seed(123)
+mycolors <- tibble(color_names = sample(colors(),5), 
+                   hex_code = colorRampPalette(color_names)(length(color_names)))
+
+mycolors
+#> # A tibble: 5 × 2
+#>   color_names          hex_code
+#>   <chr>                <chr>   
+#> 1 lightgoldenrodyellow #FAFAD2 
+#> 2 mediumorchid1        #E066FF 
+#> 3 gray26               #424242 
+#> 4 palevioletred2       #EE799F 
+#> 5 gray42               #6B6B6B
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-
-```r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" alt="plot of chunk pressure" width="100%" />
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+Now we generate all possible combinations of these colors.

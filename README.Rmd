@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of stadlColorPaletteR is to ...
+The goal of stadlColorPaletteR is to provide easy functions to create your own color platttes to be used in ggplot.
 
 ## Installation
 
@@ -35,25 +35,19 @@ Full documentation website on: https://thgsponer.github.io/stadlColorPaletteR
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to create a color palette. First, lets define some colors as the basis for our palettes.
 
-```{r example}
+```{r base-colors}
 library(stadlColorPaletteR)
-## basic example code
+library(ggplot2)
+library(tidyverse)
+
+set.seed(123)
+mycolors <- tibble(color_names = sample(colors(),5), 
+                   hex_code = colorRampPalette(color_names)(length(color_names)))
+
+mycolors
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+Now we generate all possible combinations of these colors.
 
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
