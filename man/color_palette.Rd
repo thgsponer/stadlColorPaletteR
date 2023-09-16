@@ -13,7 +13,7 @@ color_palette(colors_to_interpolate, base_colors, reverse = FALSE, ...)
 
 \item{reverse}{Boolean indicating whether or not to reverse the order of the colors.}
 
-\item{...}{Other arguments to \link[grDevice:colorRampPalette]{grDevice::colorRampPalette}}
+\item{...}{Other arguments to \link[grDevices:colorRamp]{grDevices::colorRampPalette}}
 }
 \value{
 A function interpolating colors.
