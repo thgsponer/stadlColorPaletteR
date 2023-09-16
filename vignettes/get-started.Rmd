@@ -35,6 +35,7 @@ datafile <- system.file("mycolors.csv",
                         package = "stadlColorPaletteR")
 mycolors <- readr::read_csv(datafile)
 get_color_hex_code('palevioletred2', base_colors = mycolors)
+<<<<<<< HEAD
 
 ```
 
@@ -50,6 +51,8 @@ generate_colors_to_interpolate(mycolors, 2)
 
 #combinations with all colors
 generate_colors_to_interpolate(mycolors, nrow(mycolors))
+=======
+>>>>>>> c67c23146f19230ecc0460718a94633d16fbc250
 
 ```
 
