@@ -22,6 +22,9 @@
     <loc>/news/index.html</loc>
   </url>
   <url>
+    <loc>/reference/color_palette.html</loc>
+  </url>
+  <url>
     <loc>/reference/generate_colors_to_interpolate.html</loc>
   </url>
   <url>
