@@ -200,7 +200,6 @@ mycolors_interpolated <- color_palette(
   colors_to_interpolate = 'pal1',
   base_colors = base_cols
 )
-
 ```
 
 ```{r tests-color_palette}
