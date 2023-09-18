@@ -123,6 +123,30 @@
 <span><span class="co">#&gt; 4 palevioletred2       #EE799F </span></span>
 <span><span class="co">#&gt; 5 gray42               #6B6B6B</span></span></code></pre></div>
 <p>Now we generate all possible combinations of these colors.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cols2int</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/generate_colors_to_interpolate.html">generate_colors_to_interpolate</a></span><span class="op">(</span></span>
+<span>  <span class="va">mycolors</span>,</span>
+<span>  n <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cols2int</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $pal1</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#E066FF"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal2</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#424242"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal3</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#EE799F"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal4</span></span>
+<span><span class="co">#&gt; [1] "#FAFAD2" "#6B6B6B"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal5</span></span>
+<span><span class="co">#&gt; [1] "#E066FF" "#424242"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $pal6</span></span>
+<span><span class="co">#&gt; [1] "#E066FF" "#EE799F"</span></span></code></pre></div>
 </div>
 </div>
   </div>
