@@ -12,6 +12,7 @@ Imports:
     stats,
     tibble
 Suggests: 
+    ggplot2,
     knitr,
     readr,
     rmarkdown,

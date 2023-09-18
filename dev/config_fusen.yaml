@@ -5,6 +5,7 @@ flat_full.Rmd:
   - R/color_palette.R
   - R/generate_colors_to_interpolate.R
   - R/get_color_hex_code.R
+  - R/scale_color_stadl.R
   tests:
   - tests/testthat/test-get_color_hex_code.R
   - tests/testthat/test-generate_colors_to_interpolate.R

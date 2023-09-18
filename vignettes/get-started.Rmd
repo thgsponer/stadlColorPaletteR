@@ -68,6 +68,20 @@ mycolors_interpolated <- color_palette(
   colors_to_interpolate = 'pal1',
   base_colors = base_cols
 )
+```
+
+## Create scales for ggplot
+
+```{r examples-scale_color_stadl}
+require(ggplot2)
+datafile <- system.file("mycolors.csv", 
+                        package = "stadlColorPaletteR")
+mycolors <- readr::read_csv(datafile)
+ggplot(iris, 
+       aes(Sepal.Width, Sepal.Length, color = Species)) +
+  geom_point(size = 2, alpha = 1) +
+  scale_color_stadl('pal1', generate_colors_to_interpolate(mycolors,3)) +
+  ggtitle("stadl")+theme_minimal()
 
 ```
 

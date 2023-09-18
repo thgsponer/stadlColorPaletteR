@@ -61,3 +61,29 @@ mycolors
 ```
 
 Now we generate all possible combinations of these colors.
+
+``` r
+cols2int <- generate_colors_to_interpolate(
+  mycolors,
+  n = 2
+)
+
+head(cols2int)
+#> $pal1
+#> [1] "#FAFAD2" "#E066FF"
+#> 
+#> $pal2
+#> [1] "#FAFAD2" "#424242"
+#> 
+#> $pal3
+#> [1] "#FAFAD2" "#EE799F"
+#> 
+#> $pal4
+#> [1] "#FAFAD2" "#6B6B6B"
+#> 
+#> $pal5
+#> [1] "#E066FF" "#424242"
+#> 
+#> $pal6
+#> [1] "#E066FF" "#EE799F"
+```

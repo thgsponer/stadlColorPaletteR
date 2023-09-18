@@ -50,4 +50,12 @@ mycolors
 ```
 
 Now we generate all possible combinations of these colors.
+```{r}
+cols2int <- generate_colors_to_interpolate(
+  mycolors,
+  n = 2
+)
+
+head(cols2int)
+```
 
