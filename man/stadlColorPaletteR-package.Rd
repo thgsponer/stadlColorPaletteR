@@ -6,7 +6,7 @@
 \alias{stadlColorPaletteR-package}
 \title{stadlColorPaletteR: STADL Color Palettes}
 \description{
-Build color palettes based on the five basic STADL colors.
+Color palettes based on the five STADL brand colors: a tint/shade scale for every base color, sequential and diverging palettes, ggplot2 scales and plotly colorscales.
 }
 \author{
 \strong{Maintainer}: Thomas Thomas \email{thomas.gsponer@stadl-partners.ch} (\href{https://orcid.org/0000-0000-0000-0000}{ORCID})

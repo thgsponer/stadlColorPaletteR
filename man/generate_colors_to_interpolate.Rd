@@ -7,7 +7,7 @@
 generate_colors_to_interpolate(colors, n)
 }
 \arguments{
-\item{colors}{A tibble with color_names and hex_codes as columns.}
+\item{colors}{A data frame with \code{color_names} and \code{hex_code} as columns.}
 
 \item{n}{An integer between 1 and number of colors provided.}
 }
@@ -18,14 +18,13 @@ A list of length C(N,n), each element containing n colors, where C(N,n) denotes 
 Generate all possible combination of n colors from the total number N of colors provided. Will be used later for interpolation.
 }
 \examples{
-datafile <- system.file("mycolors.csv", 
+datafile <- system.file("mycolors.csv",
                         package = "stadlColorPaletteR")
-mycolors <- readr::read_csv(datafile)
+mycolors <- read.csv(datafile)
 
 # combinations with 2 colors
 generate_colors_to_interpolate(mycolors, 2)
 
-#combinations with all colors
+# combinations with all colors
 generate_colors_to_interpolate(mycolors, nrow(mycolors))
-
 }

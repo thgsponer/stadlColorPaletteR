@@ -9,18 +9,18 @@ get_color_hex_code(..., base_colors)
 \arguments{
 \item{...}{Names of colors as character}
 
-\item{base_colors}{A tibble with color_names and hex_codes as columns}
+\item{base_colors}{A data frame with \code{color_names} and \code{hex_code} as
+columns}
 }
 \value{
-Hex code of colors specified
+Hex code of colors specified. Without names, all hex codes.
 }
 \description{
 Get hex code of colors
 }
 \examples{
-datafile <- system.file("mycolors.csv", 
+datafile <- system.file("mycolors.csv",
                         package = "stadlColorPaletteR")
-mycolors <- readr::read_csv(datafile)
-get_color_hex_code('palevioletred2', base_colors = mycolors)
-
+mycolors <- read.csv(datafile)
+get_color_hex_code("raspberry", base_colors = mycolors)
 }

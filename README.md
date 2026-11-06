@@ -4,10 +4,18 @@
 # stadlColorPaletteR
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-The goal of stadlColorPaletteR is to provide easy functions to create
-your own color platttes to be used in ggplot.
+stadlColorPaletteR provides a complete color palette based on the five
+STADL brand colors, ready to use with ggplot2 and plotly:
+
+  - a **tint/shade scale** (`50` to `900`, `500` = brand color) for
+    every base color,
+  - **sequential** palettes for ordered and continuous data,
+  - **diverging** palettes for data around a meaningful center,
+  - **ggplot2 scales** (`scale_colour_stadl()`, `scale_fill_stadl()`)
+    and **plotly colorscales** (`stadl_colorscale()`).
 
 ## Installation
 
@@ -24,66 +32,72 @@ devtools::install_github("thgsponer/stadlColorPaletteR")
 Full documentation website on:
 <https://thgsponer.github.io/stadlColorPaletteR>
 
-## Example
-
-This is a basic example which shows you how to create a color palette.
-First, lets define some colors as the basis for our palettes.
+## The colors
 
 ``` r
 library(stadlColorPaletteR)
-library(ggplot2)
-library(tidyverse)
-#> ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-#> ✔ tibble  3.1.8      ✔ dplyr   1.0.10
-#> ✔ tidyr   1.3.0      ✔ stringr 1.5.0 
-#> ✔ readr   2.1.3      ✔ forcats 0.5.2 
-#> ✔ purrr   1.0.2
-#> Warning: package 'tidyr' was built under R version 4.2.3
-#> Warning: package 'purrr' was built under R version 4.2.3
-#> Warning: package 'stringr' was built under R version 4.2.3
-#> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-#> ✖ dplyr::filter() masks stats::filter()
-#> ✖ dplyr::lag()    masks stats::lag()
 
-set.seed(123)
-mycolors <- tibble(color_names = sample(colors(),5), 
-                   hex_code = colorRampPalette(color_names)(length(color_names)))
-
-mycolors
-#> # A tibble: 5 × 2
-#>   color_names          hex_code
-#>   <chr>                <chr>   
-#> 1 lightgoldenrodyellow #FAFAD2 
-#> 2 mediumorchid1        #E066FF 
-#> 3 gray26               #424242 
-#> 4 palevioletred2       #EE799F 
-#> 5 gray42               #6B6B6B
+stadl_colors()
+#> raspberry   mustard     olive turquoise    petrol 
+#> "#BE427B" "#BEA742" "#85752E" "#42B6BE" "#2E7F85"
+stadl_colors("raspberry", c(100, 700))
+#> raspberry_100 raspberry_700 
+#>     "#F6DDE5"     "#783451"
+stadl_palette_names()
+#>  [1] "raspberry"           "mustard"             "turquoise"          
+#>  [4] "olive"               "petrol"              "grey"               
+#>  [7] "raspberry_turquoise" "raspberry_petrol"    "mustard_petrol"     
+#> [10] "olive_turquoise"
+stadl_pal("turquoise", n = 5)
+#> [1] "#F1F9F9" "#B1DDE0" "#61BFC5" "#338C93" "#274143"
 ```
 
-Now we generate all possible combinations of these colors.
+``` r
+show_stadl_palettes()
+```
+
+<img src="man/figures/README-palettes-1.png" alt="" width="80%" />
+
+## ggplot2
 
 ``` r
-cols2int <- generate_colors_to_interpolate(
-  mycolors,
-  n = 2
-)
+library(ggplot2)
 
-head(cols2int)
-#> $pal1
-#> [1] "#FAFAD2" "#E066FF"
-#> 
-#> $pal2
-#> [1] "#FAFAD2" "#424242"
-#> 
-#> $pal3
-#> [1] "#FAFAD2" "#EE799F"
-#> 
-#> $pal4
-#> [1] "#FAFAD2" "#6B6B6B"
-#> 
-#> $pal5
-#> [1] "#E066FF" "#424242"
-#> 
-#> $pal6
-#> [1] "#E066FF" "#EE799F"
+# categorical data
+ggplot(iris, aes(Sepal.Width, Sepal.Length, colour = Species)) +
+  geom_point(size = 2) +
+  scale_colour_stadl("turquoise", discrete = TRUE)
+
+# continuous data, sequential palette
+ggplot(faithfuld, aes(waiting, eruptions, fill = density)) +
+  geom_raster() +
+  scale_fill_stadl("raspberry")
+
+# data around a center, diverging palette (neutral color at midpoint)
+ggplot(df, aes(x, y, fill = change)) +
+  geom_tile() +
+  scale_fill_stadl("raspberry_turquoise", midpoint = 0)
+
+# the brand colors as manual values
+ggplot(mpg, aes(class, fill = drv)) +
+  geom_bar() +
+  scale_fill_manual(values = unname(stadl_colors(c("raspberry", "mustard", "petrol"))))
+```
+
+## plotly
+
+``` r
+library(plotly)
+
+# discrete colors
+plot_ly(iris, x = ~Sepal.Width, y = ~Sepal.Length, color = ~Species,
+        colors = stadl_colors(), type = "scatter", mode = "markers")
+
+# continuous color mapping
+plot_ly(iris, x = ~Sepal.Width, y = ~Sepal.Length, color = ~Petal.Length,
+        colors = stadl_pal("turquoise"), type = "scatter", mode = "markers")
+
+# traces with a colorscale (heatmap, contour, surface, ...)
+plot_ly(z = volcano, type = "heatmap",
+        colorscale = stadl_colorscale("raspberry"))
 ```

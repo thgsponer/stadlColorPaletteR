@@ -5,8 +5,17 @@ flat_full.Rmd:
   - R/color_palette.R
   - R/generate_colors_to_interpolate.R
   - R/get_color_hex_code.R
-  - R/scale_color_stadl.R
+  - R/stadl_colors.R
+  - R/stadl_pal.R
+  - R/show_stadl_palettes.R
+  - R/stadl_colorscale.R
+  - R/scale_colour_stadl.R
   tests:
+  - tests/testthat/test-stadl_colors.R
+  - tests/testthat/test-stadl_pal.R
+  - tests/testthat/test-show_stadl_palettes.R
+  - tests/testthat/test-scale_colour_stadl.R
+  - tests/testthat/test-stadl_colorscale.R
   - tests/testthat/test-get_color_hex_code.R
   - tests/testthat/test-generate_colors_to_interpolate.R
   - tests/testthat/test-color_palette.R
@@ -18,3 +27,13 @@ flat_full.Rmd:
     check: true
     document: true
     overwrite: ask
+    clean: ask
+    codecov: false
+keep:
+  path: keep
+  state: active
+  R:
+  - R/stadlColorPaletteR-package.R
+  - R/utils-pipe.R
+  tests: []
+  vignettes: []

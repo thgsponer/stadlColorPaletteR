@@ -1,7 +1,7 @@
 ---
 title: "flat_full.Rmd for working package"
 output: html_document
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 
@@ -10,13 +10,8 @@ editor_options:
 
 ```{r development, include=FALSE}
 library(testthat)
-library(dplyr)
-library(magrittr)
-library(readr)
+library(tibble)
 library(ggplot2)
-library(scales)
-library(ggpubr)
-library(utils)
 ```
 
 ```{r development-load}
@@ -24,101 +19,721 @@ library(utils)
 pkgload::load_all(export_all = FALSE)
 ```
 
-# Include some data examples in your package
+# The STADL colors
+
+The package is built on five STADL brand colors. They form three hue
+families: *raspberry*, *mustard* (with its darker partner *olive*), and
+*turquoise* (with its darker partner *petrol*).
+
+## Base colors and the tint/shade scale
+
+Every base color is extended into a tint/shade scale with the steps
+`50, 100, 200, ..., 900`. Step `500` is exactly the brand color. Lower steps
+are mixed towards white (tints) and higher steps towards a soft black
+(shades). Mixing is done in the perceptual CIE Lab color space.
+
+```{r function-stadl_colors, filename = "stadl_colors"}
+#' STADL base colors
+#'
+#' The five STADL brand colors as a named character vector of hex codes.
+#'
+#' @format A named character vector of length 5.
+#' @seealso [stadl_colors()], [stadl_shade_table]
+#' @export
+stadl_base_colors <- c(
+  raspberry = "#BE427B",
+  mustard   = "#BEA742",
+  olive     = "#85752E",
+  turquoise = "#42B6BE",
+  petrol    = "#2E7F85"
+)
+
+#' Steps of the STADL tint/shade scale
+#'
+#' @format An integer vector: `50, 100, 200, ..., 900`. Step `500` is the
+#'   brand color.
+#' @export
+stadl_steps <- c(50L, 100L, 200L, 300L, 400L, 500L, 600L, 700L, 800L, 900L)
+
+#' Mix two colors in CIE Lab space
+#'
+#' @param from,to Hex codes.
+#' @param amount Numeric in `[0, 1]`; share of `to` in the mix.
+#' @return A hex code.
+#' @noRd
+mix_lab <- function(from, to, amount) {
+  rgb_mat <- grDevices::colorRamp(c(from, to), space = "Lab")(amount)
+  grDevices::rgb(rgb_mat, maxColorValue = 255)
+}
+
+#' Build the tint/shade scale of a set of base colors
+#'
+#' @param base_colors Named character vector of hex codes.
+#' @return A tibble with columns `color`, `step` and `hex`.
+#' @noRd
+build_shades <- function(base_colors = stadl_base_colors) {
+  # share of white (tints) / soft black (shades) per step; 500 = brand color
+  white_share <- c(`50` = 0.92, `100` = 0.82, `200` = 0.64,
+                   `300` = 0.45, `400` = 0.24)
+  black_share <- c(`600` = 0.20, `700` = 0.40, `800` = 0.58, `900` = 0.74)
+  rows <- lapply(names(base_colors), function(nm) {
+    base <- toupper(base_colors[[nm]])
+    hex <- c(
+      vapply(white_share, function(a) mix_lab(base, "#FFFFFF", a), character(1)),
+      base,
+      vapply(black_share, function(a) mix_lab(base, "#1A1A1A", a), character(1))
+    )
+    tibble::tibble(color = nm, step = stadl_steps, hex = unname(hex))
+  })
+  do.call(rbind, rows)
+}
+
+#' STADL tint/shade table
+#'
+#' All steps of the tint/shade scale of every STADL base color.
+#'
+#' @format A tibble with 50 rows and 3 columns:
+#' \describe{
+#'   \item{color}{Name of the base color, see [stadl_base_colors].}
+#'   \item{step}{Step of the scale, see [stadl_steps]. `500` is the brand color.}
+#'   \item{hex}{Hex code.}
+#' }
+#' @export
+stadl_shade_table <- build_shades(stadl_base_colors)
+
+#' Get STADL colors by name and step
+#'
+#' Access the STADL base colors and their tints/shades.
+#'
+#' @param color Character vector of base color names (see
+#'   [stadl_base_colors]). `NULL` (default) means all base colors.
+#' @param step Numeric vector of steps (see [stadl_steps]). Default `500`
+#'   (the brand colors).
+#'
+#' @return A named character vector of hex codes. With a single step the names
+#'   are the color names, otherwise `"<color>_<step>"`.
+#' @export
+#'
+#' @examples
+stadl_colors <- function(color = NULL, step = 500) {
+  if (is.null(color)) color <- names(stadl_base_colors)
+  unknown_color <- setdiff(color, names(stadl_base_colors))
+  if (length(unknown_color) > 0) {
+    warning(paste(unknown_color, collapse = ", "),
+            " not part of the STADL base colors (",
+            paste(names(stadl_base_colors), collapse = ", "), ")!",
+            call. = FALSE)
+    color <- intersect(color, names(stadl_base_colors))
+  }
+  unknown_step <- setdiff(step, stadl_steps)
+  if (length(unknown_step) > 0) {
+    stop("step must be one of ", paste(stadl_steps, collapse = ", "),
+         call. = FALSE)
+  }
+  grid <- expand.grid(step = step, color = color, stringsAsFactors = FALSE)
+  key <- paste(stadl_shade_table$color, stadl_shade_table$step)
+  hex <- stadl_shade_table$hex[match(paste(grid$color, grid$step), key)]
+  names(hex) <- if (length(step) == 1) grid$color else
+    paste(grid$color, grid$step, sep = "_")
+  hex
+}
+```
+
+```{r examples-stadl_colors}
+# the five brand colors
+stadl_colors()
+
+# a light tint and a dark shade of raspberry
+stadl_colors("raspberry", c(100, 700))
+
+# the full table
+stadl_shade_table
+```
+
+```{r tests-stadl_colors}
+test_that("stadl_colors returns the brand colors", {
+  expect_equal(
+    unname(stadl_colors()),
+    c("#BE427B", "#BEA742", "#85752E", "#42B6BE", "#2E7F85")
+  )
+  expect_named(stadl_colors(), names(stadl_base_colors))
+  expect_equal(stadl_colors("petrol", 500), c(petrol = "#2E7F85"))
+})
+
+test_that("stadl_colors handles several steps", {
+  x <- stadl_colors(c("raspberry", "olive"), c(100, 700))
+  expect_length(x, 4)
+  expect_named(x, c("raspberry_100", "raspberry_700", "olive_100", "olive_700"))
+  expect_true(all(grepl("^#[0-9A-F]{6}$", x)))
+})
+
+test_that("stadl_colors warns and errors on bad input", {
+  expect_warning(stadl_colors(c("fuchsia", "raspberry")),
+                 "fuchsia not part of the STADL base colors")
+  expect_error(stadl_colors("raspberry", 550), "step must be one of")
+})
+
+test_that("tint/shade scale gets darker with every step", {
+  expect_equal(nrow(stadl_shade_table), 50)
+  for (nm in names(stadl_base_colors)) {
+    hex <- stadl_colors(nm, stadl_steps)
+    lab <- grDevices::convertColor(t(grDevices::col2rgb(hex)) / 255,
+                                   from = "sRGB", to = "Lab")
+    expect_true(all(diff(lab[, 1]) < 0), info = nm)
+  }
+})
+```
+
+# Palettes
+
+## Sequential and diverging palettes
+
+`stadl_palettes` contains named palettes built from the tint/shade scale:
+
+- **Sequential** palettes run from light to dark and suit ordered or
+  continuous data: `raspberry`, `mustard` (ends in olive), `turquoise` (ends
+  in petrol), `olive`, `petrol` and a neutral `grey`.
+- **Diverging** palettes run from one brand color through a light neutral to
+  another and suit data around a meaningful center: `raspberry_turquoise`,
+  `raspberry_petrol`, `mustard_petrol` and `olive_turquoise`.
+
+`stadl_pal()` returns any number of colors from a palette as a plain vector
+of hex codes. That works everywhere: `ggplot2::scale_*_manual()`,
+`plotly::plot_ly(colors = ...)` or base R graphics.
+
+```{r function-stadl_pal, filename = "stadl_pal"}
+#' Build a palette definition
+#' @noRd
+new_stadl_palette <- function(type, colors) {
+  list(type = type, colors = unname(colors))
+}
+
+#' STADL palettes
+#'
+#' Named list of sequential and diverging palettes built from the STADL
+#' tint/shade scale. Every element is a list with `type` (`"sequential"` or
+#' `"diverging"`) and `colors` (the anchor colors, light to dark for
+#' sequential palettes).
+#'
+#' @format A named list.
+#' @seealso [stadl_pal()], [stadl_palette_names()]
+#' @export
+stadl_palettes <- local({
+  s <- function(color, step) unname(stadl_colors(color, step))
+  neutral <- "#F2F2F2"
+  diverging <- function(left, right) {
+    new_stadl_palette("diverging", c(
+      s(left, c(700, 500, 200)), neutral, s(right, c(200, 500, 700))
+    ))
+  }
+  list(
+    raspberry = new_stadl_palette("sequential",
+      s("raspberry", c(50, 200, 400, 500, 700, 900))),
+    mustard = new_stadl_palette("sequential",
+      c(s("mustard", c(50, 200, 400, 500)), s("olive", c(500, 800)))),
+    turquoise = new_stadl_palette("sequential",
+      c(s("turquoise", c(50, 200, 400, 500)), s("petrol", c(500, 800)))),
+    olive = new_stadl_palette("sequential",
+      s("olive", c(50, 200, 400, 500, 700, 900))),
+    petrol = new_stadl_palette("sequential",
+      s("petrol", c(50, 200, 400, 500, 700, 900))),
+    grey = new_stadl_palette("sequential",
+      c("#F5F5F5", "#D6D6D6", "#A3A3A3", "#707070", "#424242", "#1A1A1A")),
+    raspberry_turquoise = diverging("raspberry", "turquoise"),
+    raspberry_petrol    = diverging("raspberry", "petrol"),
+    mustard_petrol      = diverging("mustard", "petrol"),
+    olive_turquoise     = diverging("olive", "turquoise")
+  )
+})
+
+#' Names of the STADL palettes
+#'
+#' @param type `"all"` (default), `"sequential"` or `"diverging"`.
+#' @return A character vector of palette names.
+#' @export
+#'
+stadl_palette_names <- function(type = c("all", "sequential", "diverging")) {
+  type <- match.arg(type)
+  types <- vapply(stadl_palettes, `[[`, character(1), "type")
+  if (type == "all") names(types) else names(types)[types == type]
+}
+
+#' Look up a palette definition, with an informative error
+#' @noRd
+get_stadl_palette <- function(palette) {
+  if (!is.character(palette) || length(palette) != 1 ||
+      !palette %in% names(stadl_palettes)) {
+    stop("palette must be one of: ",
+         paste(names(stadl_palettes), collapse = ", "), call. = FALSE)
+  }
+  stadl_palettes[[palette]]
+}
+
+#' Get colors from a STADL palette
+#'
+#' @param palette Name of a palette, see [stadl_palette_names()].
+#' @param n Number of colors. `NULL` (default) returns the palette's anchor
+#'   colors. Other values interpolate in CIE Lab space.
+#' @param reverse Logical. Reverse the order of the colors?
+#'
+#' @return A character vector of hex codes.
+#' @export
+#'
+#' @examples
+stadl_pal <- function(palette = "raspberry_turquoise", n = NULL,
+                      reverse = FALSE) {
+  colors <- get_stadl_palette(palette)$colors
+  if (!is.null(n)) colors <- stadl_pal_fun(palette)(n)
+  if (reverse) colors <- rev(colors)
+  colors
+}
+
+#' Create an interpolating function for a STADL palette
+#'
+#' @inheritParams stadl_pal
+#'
+#' @return A function that takes an integer `n` and returns `n` hex codes.
+#' @export
+#'
+stadl_pal_fun <- function(palette = "raspberry_turquoise", reverse = FALSE) {
+  colors <- get_stadl_palette(palette)$colors
+  if (reverse) colors <- rev(colors)
+  ramp <- grDevices::colorRamp(colors, space = "Lab")
+  anchor_pos <- seq(0, 1, length.out = length(colors))
+  function(n) {
+    pos <- if (n == 1) 0 else seq(0, 1, length.out = n)
+    out <- grDevices::rgb(round(ramp(pos)), maxColorValue = 255)
+    # the Lab round trip can shift colors by one unit: keep anchors exact
+    hit <- match(round(pos, 10), round(anchor_pos, 10))
+    out[!is.na(hit)] <- colors[hit[!is.na(hit)]]
+    toupper(out)
+  }
+}
+```
+
+```{r examples-stadl_pal}
+stadl_palette_names()
+stadl_palette_names("diverging")
+
+# anchor colors of a palette
+stadl_pal("turquoise")
+
+# 7 interpolated colors, dark to light
+stadl_pal("raspberry", n = 7, reverse = TRUE)
+
+# a palette function, e.g. for base R graphics
+pal <- stadl_pal_fun("raspberry_turquoise")
+image(volcano, col = pal(64))
+```
+
+```{r tests-stadl_pal}
+test_that("stadl_palette_names lists palettes by type", {
+  expect_true(all(c("raspberry", "turquoise", "raspberry_turquoise") %in%
+                    stadl_palette_names()))
+  expect_false("raspberry_turquoise" %in% stadl_palette_names("sequential"))
+  expect_true(all(grepl("_", stadl_palette_names("diverging"))))
+})
+
+test_that("stadl_pal returns valid hex codes", {
+  for (p in stadl_palette_names()) {
+    for (n in c(1, 2, 5, 12)) {
+      x <- stadl_pal(p, n)
+      expect_length(x, n)
+      expect_true(all(grepl("^#[0-9A-F]{6}$", x)), info = p)
+    }
+  }
+})
+
+test_that("stadl_pal keeps anchors and reverses", {
+  expect_equal(stadl_pal("turquoise"), stadl_palettes$turquoise$colors)
+  expect_equal(stadl_pal("raspberry", 5, reverse = TRUE),
+               rev(stadl_pal("raspberry", 5)))
+  expect_equal(stadl_pal_fun("petrol", reverse = TRUE)(4),
+               rev(stadl_pal("petrol", 4)))
+  # interpolating to the number of anchors returns the anchors
+  anchors <- stadl_pal("raspberry_turquoise")
+  expect_equal(stadl_pal("raspberry_turquoise", length(anchors)), anchors)
+})
+
+test_that("sequential palettes run light to dark", {
+  for (p in stadl_palette_names("sequential")) {
+    lab <- grDevices::convertColor(
+      t(grDevices::col2rgb(stadl_pal(p, 10))) / 255, from = "sRGB", to = "Lab")
+    expect_true(all(diff(lab[, 1]) < 0), info = p)
+  }
+})
+
+test_that("unknown palettes give an informative error", {
+  expect_error(stadl_pal("rainbow"), "palette must be one of")
+  expect_error(stadl_pal_fun("rainbow"), "palette must be one of")
+})
+```
+
+## Palette overview
+
+```{r function-show_stadl_palettes, filename = "show_stadl_palettes"}
+#' Show all STADL colors and palettes
+#'
+#' Draws swatches of the tint/shade scale (top) and of every palette (bottom)
+#' with base graphics.
+#'
+#' @param n Number of colors shown per palette.
+#'
+#' @return Invisibly, `NULL`. Called for its side effect.
+#' @export
+#'
+#' @examples
+show_stadl_palettes <- function(n = 9) {
+  old <- graphics::par(mar = c(1, 9, 2, 1), mfrow = c(2, 1))
+  on.exit(graphics::par(old))
+
+  swatches <- function(cols, labels, title, cell_labels = NULL) {
+    nr <- length(cols)
+    nc <- max(lengths(cols))
+    graphics::plot(NULL, xlim = c(0, nc), ylim = c(0, nr), axes = FALSE,
+                   xlab = "", ylab = "", main = title, xaxs = "i", yaxs = "i")
+    for (i in seq_len(nr)) {
+      y <- nr - i
+      k <- length(cols[[i]])
+      graphics::rect(seq_len(k) - 1, y, seq_len(k), y + 1,
+                     col = cols[[i]], border = "white")
+      if (!is.null(cell_labels)) {
+        lab_col <- ifelse(seq_len(k) <= 5, "#1A1A1A", "#FFFFFF")
+        graphics::text(seq_len(k) - 0.5, y + 0.5, cell_labels,
+                       cex = 0.6, col = lab_col)
+      }
+    }
+    graphics::axis(2, at = rev(seq_len(nr)) - 0.5, labels = labels,
+                   las = 1, tick = FALSE, cex.axis = 0.8)
+  }
+
+  shades <- lapply(names(stadl_base_colors),
+                   function(nm) unname(stadl_colors(nm, stadl_steps)))
+  swatches(shades, names(stadl_base_colors), "STADL tint/shade scale",
+           cell_labels = stadl_steps)
+  pals <- lapply(stadl_palette_names(), stadl_pal, n = n)
+  swatches(pals, stadl_palette_names(), "STADL palettes")
+  invisible(NULL)
+}
+```
+
+```{r examples-show_stadl_palettes}
+show_stadl_palettes()
+```
+
+```{r tests-show_stadl_palettes}
+test_that("show_stadl_palettes draws without error", {
+  path <- tempfile(fileext = ".png")
+  grDevices::png(path, width = 800, height = 800)
+  expect_null(show_stadl_palettes())
+  grDevices::dev.off()
+  expect_true(file.exists(path))
+})
+```
+
+# Using the palettes in plots
+
+## ggplot2 scales
+
+`scale_colour_stadl()` / `scale_color_stadl()` and `scale_fill_stadl()` work
+for continuous data (the default) and, with `discrete = TRUE`, for
+categorical data. For diverging palettes the neutral middle color is placed
+at `midpoint` (default `0`).
+
+```{r function-scale_colour_stadl, filename = "scale_colour_stadl"}
+#' Discrete palette function for ggplot2
+#'
+#' Sequential palettes skip their lightest color, so that no category is
+#' (nearly) invisible on a white background.
+#' @noRd
+stadl_discrete_pal <- function(palette, reverse = FALSE) {
+  type <- get_stadl_palette(palette)$type
+  f <- stadl_pal_fun(palette)
+  function(n) {
+    cols <- if (type == "sequential") f(n + 1)[-1] else f(n)
+    if (reverse) rev(cols) else cols
+  }
+}
+
+#' Shared constructor of the STADL ggplot2 scales
+#' @noRd
+stadl_scale <- function(aesthetics, palette, discrete, reverse, midpoint,
+                        ...) {
+  rlang::check_installed("ggplot2", reason = "to use STADL ggplot2 scales.")
+  type <- get_stadl_palette(palette)$type
+  if (discrete) {
+    return(ggplot2::discrete_scale(
+      aesthetics = aesthetics,
+      palette = stadl_discrete_pal(palette, reverse),
+      ...
+    ))
+  }
+  # pass the anchors: ggplot2 interpolates between them in Lab space, and the
+  # neutral middle of a diverging palette sits exactly at the midpoint
+  colours <- stadl_pal(palette, reverse = reverse)
+  if (type == "diverging") {
+    if (is.null(midpoint)) midpoint <- 0
+    rescaler <- function(x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
+      scales::rescale_mid(x, to = to, from = from, mid = midpoint)
+    }
+    ggplot2::scale_colour_gradientn(colours = colours, aesthetics = aesthetics,
+                                    rescaler = rescaler, ...)
+  } else {
+    ggplot2::scale_colour_gradientn(colours = colours, aesthetics = aesthetics,
+                                    ...)
+  }
+}
+
+#' STADL color and fill scales for ggplot2
+#'
+#' @param palette Name of a palette, see [stadl_palette_names()].
+#' @param discrete Logical. Use a discrete scale (categorical data)? Default
+#'   `FALSE` (continuous data).
+#' @param reverse Logical. Reverse the order of the colors?
+#' @param midpoint For continuous scales with a diverging palette: the data
+#'   value mapped to the neutral middle color. Defaults to `0`. Ignored
+#'   otherwise.
+#' @param ... Other arguments passed to [ggplot2::discrete_scale()] or
+#'   [ggplot2::scale_colour_gradientn()], e.g. `name`, `limits`, `breaks`.
+#'
+#' @return A ggplot2 scale.
+#' @export
+#'
+#' @examples
+scale_colour_stadl <- function(palette = "raspberry_turquoise",
+                               discrete = FALSE, reverse = FALSE,
+                               midpoint = NULL, ...) {
+  stadl_scale("colour", palette, discrete, reverse, midpoint, ...)
+}
+
+#' @rdname scale_colour_stadl
+#' @export
+scale_color_stadl <- scale_colour_stadl
+
+#' @rdname scale_colour_stadl
+#' @export
+scale_fill_stadl <- function(palette = "raspberry_turquoise",
+                             discrete = FALSE, reverse = FALSE,
+                             midpoint = NULL, ...) {
+  stadl_scale("fill", palette, discrete, reverse, midpoint, ...)
+}
+```
+
+```{r examples-scale_colour_stadl}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  library(ggplot2)
+
+  # categorical data
+  ggplot(iris, aes(Sepal.Width, Sepal.Length, colour = Species)) +
+    geom_point(size = 2) +
+    scale_colour_stadl("turquoise", discrete = TRUE) +
+    theme_minimal()
+
+  # continuous data, sequential palette
+  ggplot(faithfuld, aes(waiting, eruptions, fill = density)) +
+    geom_raster() +
+    scale_fill_stadl("raspberry") +
+    theme_minimal()
+
+  # continuous data around a center, diverging palette
+  df <- expand.grid(x = 1:20, y = 1:20)
+  df$z <- with(df, sin(x / 3) * cos(y / 4))
+  ggplot(df, aes(x, y, fill = z)) +
+    geom_tile() +
+    scale_fill_stadl("raspberry_turquoise", midpoint = 0) +
+    theme_minimal()
+}
+```
+
+```{r tests-scale_colour_stadl}
+test_that("ggplot2 scales have the right aesthetic and type", {
+  skip_if_not_installed("ggplot2")
+  expect_s3_class(scale_colour_stadl(), "ScaleContinuous")
+  expect_equal(scale_colour_stadl()$aesthetics, "colour")
+  expect_equal(scale_fill_stadl()$aesthetics, "fill")
+  expect_s3_class(scale_fill_stadl("turquoise", discrete = TRUE),
+                  "ScaleDiscrete")
+  expect_identical(scale_color_stadl, scale_colour_stadl)
+  expect_error(scale_fill_stadl("rainbow"), "palette must be one of")
+})
+
+test_that("ggplot2 scales build plots", {
+  skip_if_not_installed("ggplot2")
+  df <- data.frame(x = 1:6, y = 1:6, z = c(-3, -1, 0, 1, 2, 5),
+                   g = letters[1:6])
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
+    ggplot2::geom_point(ggplot2::aes(colour = g)) +
+    scale_colour_stadl("raspberry", discrete = TRUE)
+  cols <- ggplot2::ggplot_build(p)$data[[1]]$colour
+  expect_equal(cols, stadl_pal("raspberry", 7)[-1])
+
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = z)) +
+    ggplot2::geom_tile() +
+    scale_fill_stadl("raspberry_turquoise", midpoint = 0)
+  fills <- ggplot2::ggplot_build(p)$data[[1]]$fill
+  # the data value 0 gets the neutral middle color
+  expect_equal(toupper(fills[df$z == 0]), "#F2F2F2")
+
+  p <- ggplot2::ggplot(df, ggplot2::aes(x, y, fill = z)) +
+    ggplot2::geom_tile() +
+    scale_fill_stadl("petrol", reverse = TRUE)
+  expect_s3_class(ggplot2::ggplot_build(p), "ggplot_built")
+})
+```
+
+## plotly
+
+For discrete or continuous `color` mappings in plotly, pass a vector from
+`stadl_pal()` to `colors`. Traces that take a `colorscale` (heatmaps,
+contours, surfaces, markers) need `stadl_colorscale()`.
+
+```{r function-stadl_colorscale, filename = "stadl_colorscale"}
+#' STADL palette as a plotly colorscale
+#'
+#' @inheritParams stadl_pal
+#' @param n Number of color stops. Default `11`.
+#'
+#' @return A list of `list(position, hex)` pairs with positions from 0 to 1,
+#'   as expected by the `colorscale` attribute of plotly traces.
+#' @export
+#'
+#' @examples
+stadl_colorscale <- function(palette = "raspberry_turquoise", n = 11,
+                             reverse = FALSE) {
+  if (n < 2) stop("n must be at least 2", call. = FALSE)
+  cols <- stadl_pal(palette, n = n, reverse = reverse)
+  pos <- seq(0, 1, length.out = n)
+  Map(function(p, col) list(p, col), pos, cols)
+}
+```
+
+```{r examples-stadl_colorscale}
+stadl_colorscale("turquoise", n = 5)
+
+if (requireNamespace("plotly", quietly = TRUE)) {
+  # heatmap with a sequential colorscale
+  plotly::plot_ly(z = volcano, type = "heatmap",
+                  colorscale = stadl_colorscale("raspberry"))
+
+  # discrete colors
+  plotly::plot_ly(iris, x = ~Sepal.Width, y = ~Sepal.Length,
+                  color = ~Species, colors = stadl_colors(),
+                  type = "scatter", mode = "markers")
+
+  # continuous color mapping
+  plotly::plot_ly(iris, x = ~Sepal.Width, y = ~Sepal.Length,
+                  color = ~Petal.Length, colors = stadl_pal("turquoise"),
+                  type = "scatter", mode = "markers")
+}
+```
+
+```{r tests-stadl_colorscale}
+test_that("stadl_colorscale runs from 0 to 1", {
+  cs <- stadl_colorscale("raspberry", n = 5)
+  expect_length(cs, 5)
+  expect_equal(cs[[1]][[1]], 0)
+  expect_equal(cs[[5]][[1]], 1)
+  expect_equal(vapply(cs, `[[`, character(1), 2), stadl_pal("raspberry", 5))
+  expect_equal(stadl_colorscale("raspberry", 5, reverse = TRUE)[[1]][[2]],
+               stadl_pal("raspberry", 5)[5])
+  expect_error(stadl_colorscale(n = 1), "n must be at least 2")
+})
+
+test_that("plotly accepts the STADL colorscale", {
+  skip_if_not_installed("plotly")
+  p <- plotly::plot_ly(z = volcano, type = "heatmap",
+                       colorscale = stadl_colorscale("turquoise"))
+  expect_no_error(plotly::plotly_build(p))
+})
+```
+
+# Palettes from your own colors
+
+The functions below build palettes from any table of colors with the
+columns `color_names` and `hex_code`. The package includes the STADL colors
+as such a table in `inst/mycolors.csv`.
 
 ```{r development-dataset}
 # Run all this chunk in the console directly
-# There already is a dataset in the "inst/" directory
 # Make the dataset file available to the current Rmd during development
-pkgload::load_all(path = here::here(), export_all = FALSE)
-
-# set.seed(123)
-# mycolors <- tibble(color_names = sample(colors(),5), 
-#                    hex_code = colorRampPalette(color_names)(length(color_names)))
-datafile <- system.file("mycolors.csv", 
-                        package = "stadlColorPaletteR")
-mycolors <- readr::read_csv(datafile)
-
+datafile <- system.file("mycolors.csv", package = "stadlColorPaletteR")
+mycolors <- read.csv(datafile)
 ```
-
-
-# Functions to generate color palettes
-
 
 ## Extract hex-code of colors specified in a tibble
 
-```{r function-get_color_hex_code}
+```{r function-get_color_hex_code, filename = "get_color_hex_code"}
 #' Get hex code of colors
 #'
-#' @param ... Names of colors as character 
-#' @param base_colors A tibble with color_names and hex_codes as columns
+#' @param ... Names of colors as character
+#' @param base_colors A data frame with `color_names` and `hex_code` as
+#'   columns
 #'
 #' @return
-#' Hex code of colors specified
-#' 
+#' Hex code of colors specified. Without names, all hex codes.
+#'
 #' @export
 #'
 #' @examples
 get_color_hex_code <- function(..., base_colors) {
-
   cols <- c(...)
   if (is.null(cols))
-    return (base_colors %>% dplyr::pull(hex_code))
-  if (!all(cols%in%base_colors$color_names)){
-    not <- cols[!cols%in%base_colors$color_names]
-    warning(paste(not, collapse=', '), 
-            ' not part of base_colors!')
+    return(base_colors$hex_code)
+  if (!all(cols %in% base_colors$color_names)) {
+    not <- cols[!cols %in% base_colors$color_names]
+    warning(paste(not, collapse = ", "),
+            " not part of base_colors!")
   }
-    
-  base_colors %>% 
-    dplyr::filter(
-      color_names %in% cols) %>% 
-    dplyr::pull(hex_code)
+  base_colors$hex_code[base_colors$color_names %in% cols]
 }
 ```
 
 ```{r examples-get_color_hex_code}
-datafile <- system.file("mycolors.csv", 
+datafile <- system.file("mycolors.csv",
                         package = "stadlColorPaletteR")
-mycolors <- readr::read_csv(datafile)
-get_color_hex_code('palevioletred2', base_colors = mycolors)
-
+mycolors <- read.csv(datafile)
+get_color_hex_code("raspberry", base_colors = mycolors)
 ```
 
 ```{r tests-get_color_hex_code}
-
 test_that("get_color_hex_code works properly and show error if needed", {
   set.seed(123)
-  myc <- tibble(color_names = sample(colors(),5), 
-                     hex_code = colorRampPalette(color_names)(length(color_names)))
-  
-  expect_true(get_color_hex_code('mediumorchid1', base_colors = myc) == '#E066FF')
-  expect_warning(get_color_hex_code("fuchsia", base_colors = myc), 'fuchsia not part of base_colors')
+  myc <- tibble(color_names = sample(colors(), 5),
+                hex_code = colorRampPalette(color_names)(length(color_names)))
+
+  expect_true(get_color_hex_code("mediumorchid1", base_colors = myc) == "#E066FF")
+  expect_equal(get_color_hex_code(base_colors = myc), myc$hex_code)
+  expect_warning(get_color_hex_code("fuchsia", base_colors = myc), "fuchsia not part of base_colors")
   expect_error(get_color_hex_code("mediumorchid1", base_colors = asdf), "object 'asdf' not found")
 })
 
+test_that("the shipped color table holds the STADL colors", {
+  mycolors <- read.csv(system.file("mycolors.csv", package = "stadlColorPaletteR"))
+  expect_equal(stats::setNames(mycolors$hex_code, mycolors$color_names),
+               stadl_base_colors)
+})
 ```
 
 ## Generate colors for later interpolation
 
-```{r function-generate_colors_to_interpolate}
-#' Generate all possible combination of n colors from the total number N of colors provided. Will be used later for interpolation. 
+```{r function-generate_colors_to_interpolate, filename = "generate_colors_to_interpolate"}
+#' Generate all possible combination of n colors from the total number N of colors provided. Will be used later for interpolation.
 #'
-#' @param colors A tibble with color_names and hex_codes as columns. 
+#' @param colors A data frame with `color_names` and `hex_code` as columns.
 #' @param n An integer between 1 and number of colors provided.
 #'
 #' @return
-#' A list of length C(N,n), each element containing n colors, where C(N,n) denotes the number of n-combination from a set of N elements. 
-#' 
+#' A list of length C(N,n), each element containing n colors, where C(N,n) denotes the number of n-combination from a set of N elements.
+#'
 #' @export
 #'
 #' @examples
 generate_colors_to_interpolate <- function(colors, n){
-  if(n<1) {
-    stop("n must be greater than 1")
+  if (n < 1) {
+    stop("n must be at least 1")
   }
-  pal <- combn(get_color_hex_code(base_colors = colors),n)
-  colnames(pal) <- paste('pal',1:ncol(pal), sep = '')
+  pal <- utils::combn(get_color_hex_code(base_colors = colors), n)
+  colnames(pal) <- paste("pal", seq_len(ncol(pal)), sep = "")
   as.list(
     as.data.frame(pal)
   )
@@ -126,177 +741,109 @@ generate_colors_to_interpolate <- function(colors, n){
 ```
 
 ```{r examples-generate_colors_to_interpolate}
-datafile <- system.file("mycolors.csv", 
+datafile <- system.file("mycolors.csv",
                         package = "stadlColorPaletteR")
-mycolors <- readr::read_csv(datafile)
+mycolors <- read.csv(datafile)
 
 # combinations with 2 colors
 generate_colors_to_interpolate(mycolors, 2)
 
-#combinations with all colors
+# combinations with all colors
 generate_colors_to_interpolate(mycolors, nrow(mycolors))
-
 ```
 
 ```{r tests-generate_colors_to_interpolate}
-
+test_that("generate_colors_to_interpolate returns all combinations", {
   set.seed(123)
-  myc <- tibble(color_names = sample(colors(),5), 
-                     hex_code = colorRampPalette(color_names)(length(color_names)))
-  
-  p2 <- combn(get_color_hex_code(base_colors = myc),2)
-  colnames(p2) <- paste('pal',1:ncol(p2), sep = '')
+  myc <- tibble(color_names = sample(colors(), 5),
+                hex_code = colorRampPalette(color_names)(length(color_names)))
+
+  p2 <- combn(get_color_hex_code(base_colors = myc), 2)
+  colnames(p2) <- paste("pal", 1:ncol(p2), sep = "")
   p2 <- as.list(
     as.data.frame(p2)
   )
 
   p1 <- generate_colors_to_interpolate(colors = myc, 2)
-  
-  testthat::expect_true(
-    identical(p1, p2)
-  )
-  
-  testthat::expect_error(generate_colors_to_interpolate(colors = myc, 0), 
-               "n must be greater than 1")
 
-  testthat::expect_error(generate_colors_to_interpolate(colors = myc, 0))
-  
+  expect_identical(p1, p2)
+  expect_length(generate_colors_to_interpolate(colors = myc, 5), 1)
+  expect_error(generate_colors_to_interpolate(colors = myc, 0),
+               "n must be at least 1")
+})
 ```
+
 ## Access and interpolate colors
 
-```{r function-color_palette}
-#' Create a function that allows to interpolate and acces colors. 
+```{r function-color_palette, filename = "color_palette"}
+#' Create a function that allows to interpolate and access colors.
 #'
-#' @param colors_to_interpolate Name of the colors to interpolate. It is the name of a list element as generated by the function [generate_colors_to_interpolate()]. 
-#' @param base_colors_set A list of colors to interplotate. Output from [generate_colors_to_interpolate()].
-#' @param subset A numeric vector indicating the color's position you want to keep.
+#' @param colors_to_interpolate Name of the colors to interpolate. It is the name of a list element as generated by the function [generate_colors_to_interpolate()].
+#' @param base_colors_set A list of colors to interpolate. Output from [generate_colors_to_interpolate()].
+#' @param subset A numeric vector indicating the color's position you want to keep. Ignored if it refers to positions that don't exist.
 #' @param reverse Boolean indicating whether or not to reverse the order of the colors.
 #' @param ... Other arguments to [grDevices::colorRampPalette]
 #'
 #' @return
 #' A function interpolating colors.
-#' 
+#'
+#' @seealso [stadl_pal_fun()] for the predefined STADL palettes.
 #' @export
 #'
 #' @examples
-color_palette <- function(colors_to_interpolate, 
-                          base_colors_set, 
-                          subset = as.vector(NULL),
+color_palette <- function(colors_to_interpolate,
+                          base_colors_set,
+                          subset = NULL,
                           reverse = FALSE, ...) {
   pal <- base_colors_set[[colors_to_interpolate]]
-  if (length(subset) > 0 && max(subset)>length(pal)) {
-    pal <- pal
-  } else if (length(subset) > 0 && max(subset)<length(pal)) {
+  if (length(subset) > 0 && max(subset) <= length(pal)) {
     pal <- pal[subset]
   }
   if (reverse) pal <- rev(pal)
-  colorRampPalette(pal, ...)
+  grDevices::colorRampPalette(pal, ...)
 }
 ```
 
 ```{r examples-color_palette}
-datafile <- system.file("mycolors.csv", 
+datafile <- system.file("mycolors.csv",
                         package = "stadlColorPaletteR")
-mycolors <- readr::read_csv(datafile)
+mycolors <- read.csv(datafile)
 
 # combinations with 2 colors
 base_cols <- generate_colors_to_interpolate(mycolors, 2)
 
 # interpolate first element of base_cols
 mycolors_interpolated <- color_palette(
-  colors_to_interpolate = 'pal1',
-  base_colors = base_cols
+  colors_to_interpolate = "pal1",
+  base_colors_set = base_cols
 )
+mycolors_interpolated(5)
 ```
 
 ```{r tests-color_palette}
-
+test_that("color_palette interpolates, subsets and reverses", {
   set.seed(123)
-  myc <- tibble(color_names = sample(colors(),5), 
-                     hex_code = colorRampPalette(color_names)(length(color_names)))
-  
-  base_cols <- generate_colors_to_interpolate(myc, 2)
-  
-  # interpolate first element of base_cols
-  myc_interpolated <- color_palette(
-    colors_to_interpolate = 'pal1',
-    base_colors = base_cols
-  )
- 
-  testthat::expect_true(
-    class(myc_interpolated) == 'function'
-  )
-  
+  myc <- tibble(color_names = sample(colors(), 5),
+                hex_code = colorRampPalette(color_names)(length(color_names)))
+
+  base_cols <- generate_colors_to_interpolate(myc, 3)
+
+  f <- color_palette(colors_to_interpolate = "pal1", base_colors_set = base_cols)
+  expect_type(f, "closure")
+  expect_equal(f(3), base_cols$pal1)
+
+  # subset including the last position
+  f <- color_palette("pal1", base_cols, subset = c(1, 3))
+  expect_equal(f(2), base_cols$pal1[c(1, 3)])
+
+  # out-of-range subset is ignored
+  f <- color_palette("pal1", base_cols, subset = c(1, 4))
+  expect_equal(f(3), base_cols$pal1)
+
+  f <- color_palette("pal1", base_cols, reverse = TRUE)
+  expect_equal(f(3), rev(base_cols$pal1))
+})
 ```
-
-## Create scales for ggplot
-
-```{r function-ggplot_scales}
-#' Create function for color scales 
-#'
-#' @param colors_to_interpolate Name of the colors to interpolate. It is the name of a list element as generated by the function [generate_colors_to_interpolate()]. 
-#' @param base_colors A list of colors to interplotate. Output from [generate_colors_to_interpolate()].
-#' @param reverse Boolean indicating whether or not to reverse the order of the colors.
-#' @param discrete Boolean indicating whetehr or not to use discrete scale
-#' @param ... Other arguments to [grDevices::colorRampPalette]
-#'
-#' @return
-#' A function for scales to use in ggplot.
-#' 
-#' @export
-#'
-#' @examples
-scale_color_stadl <- function(colors_to_interpolate = "pal1", base_colors_set = stadl2,
-                              discrete = TRUE, reverse = FALSE, subset = as.vector(NULL), ...) {
-  pal <- color_palette(colors_to_interpolate = colors_to_interpolate, 
-                       reverse = reverse, base_colors_set = base_colors_set, subset = subset)
-
-  if (discrete) {
-    discrete_scale("colour", paste0("stadl_", colors_to_interpolate), palette = pal, ...)
-  } else {
-    scale_color_gradientn(colours = pal(256), ...)
-  }
-}
-
-
-#' Create function for filling scales. 
-#'
-#' @param colors_to_interpolate Name of the colors to interpolate. It is the name of a list element as generated by the function [generate_colors_to_interpolate()]. 
-#' @param base_colors A list of colors to interplotate. Output from [generate_colors_to_interpolate()].
-#' @param reverse Boolean indicating whether or not to reverse the order of the colors.
-#' @param ... Other arguments to [grDevices::colorRampPalette]
-#'
-#' @return
-#' A function interpolating colors.
-#' 
-#' @export
-#'
-scale_fill_stadl <- function(colors_to_interpolate = "pal1", base_colors_set = stadl2,
-                              discrete = TRUE, reverse = FALSE, subset = as.vector(NULL), ...) {
-  pal <- color_palette(colors_to_interpolate = colors_to_interpolate, 
-                       reverse = reverse, base_colors_set = base_colors_set, subset = subset)
-
-  if (discrete) {
-    discrete_scale("colour", paste0("stadl_", colors_to_interpolate), palette = pal, ...)
-  } else {
-    scale_color_gradientn(colours = pal(256), ...)
-  }
-}
-
-```
-```{r examples-scale_color_stadl}
-require(ggplot2)
-datafile <- system.file("mycolors.csv", 
-                        package = "stadlColorPaletteR")
-mycolors <- readr::read_csv(datafile)
-ggplot(iris, 
-       aes(Sepal.Width, Sepal.Length, color = Species)) +
-  geom_point(size = 2, alpha = 1) +
-  scale_color_stadl('pal1', generate_colors_to_interpolate(mycolors,3)) +
-  ggtitle("stadl")+theme_minimal()
-
-```
-
 
 
 ```{r development-inflate, eval=FALSE}
@@ -304,14 +851,3 @@ ggplot(iris,
 # Execute in the console directly
 fusen::inflate(flat_file = "dev/flat_full.Rmd", vignette_name = "Get started")
 ```
-
-
-# Inflate your package
-
-You're one inflate from paper to box.
-Build your package from this very Rmd using `fusen::inflate()`
-
-- Verify your `"DESCRIPTION"` file has been updated
-- Verify your function is in `"R/"` directory
-- Verify your test is in `"tests/testthat/"` directory
-- Verify this Rmd appears in `"vignettes/"` directory

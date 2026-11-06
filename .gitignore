@@ -51,3 +51,5 @@ rsconnect/
 .DS_Store
 .Rdata
 inst/doc
+/doc/
+/Meta/
